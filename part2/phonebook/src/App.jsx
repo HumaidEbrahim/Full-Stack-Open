@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personsService from './personsService'
+import './index.css'
 
 const PersonForm = (props) =>
 {
@@ -19,10 +20,13 @@ const PersonForm = (props) =>
 }
 
 
-const Persons = (props) => 
+const Person = ({ person, handleRemove }) => 
 {
   return (
-    props.personsFiltered.map(p => <p key={p.id}> {p.name} {p.number} </p>)
+    <p>
+      {person.name}  {person.number}
+      <button onClick={handleRemove}>delete</button>
+    </p>
   )
 }
 
@@ -35,30 +39,57 @@ const Filter = (props) =>
   )
 }
 
+const Notification = ({ message, type }) =>
+{
+  if (!message)
+    return null
 
+  return (
+    <div className={type === 'success' ? 'notification success' : 'notification failure'}>
+      {message}
+    </div >
+  )
+}
 
 const App = () =>
 {
 
   const [persons, setPersons] = useState([])
-
-
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [notification, setNotification] = useState({ message: '', type: '' })
 
   useEffect(() =>
   {
-    axios
-      .get('http://localhost:3001/persons')
+    personsService.getAll()
       .then(response =>
       {
-        console.log('fulfilled')
-        setPersons(response.data)
+        setPersons(response)
+        console.log("GET", response)
       })
   }, [])
 
-  console.log('render', persons.length, 'persons')
+  const showNotification = (message, type) =>
+  {
+    setNotification({ message, type })
+    setTimeout(() => 
+    {
+      setNotification('', '')
+    }, 5000)
+  }
+
+
+  const updateNumber = (person) => 
+  {
+    const updatePerson = { ...person, number: newNumber }
+    personsService.update(updatePerson.id, updatePerson)
+      .then(response =>
+      {
+        setPersons(persons.map(p => p.id === updatePerson.id ? response : p))
+        showNotification(`Number for ${updatePerson.name} has been updated`, 'success')
+      })
+  }
 
   const addNumber = (event) =>
   {
@@ -66,16 +97,33 @@ const App = () =>
 
     if (persons.some(person => person.name === newName))
     {
-      alert(`${newName} is already added to the phonebook`)
-    } else
-    {
-      setPersons([...persons, { name: newName, number: newNumber, id: persons.length + 1 }])
+
+      if (window.confirm(`${newName} is already added to the phonebook, replace the old number with a new one?`))
+        updateNumber(persons.find(person => person.name === newName))
       setNewNumber('')
       setNewName('')
 
     }
+    else
+    {
+      const newObject = {
+        name: newName,
+        number: newNumber,
+        id: String(persons.length + 1)
+      }
 
+      personsService.create(newObject)
+        .then(returnedPerson =>
+        {
+          setPersons([...persons, returnedPerson])
+          setNewNumber('')
+          setNewName('')
+          showNotification(`Added ${returnedPerson.name}`, 'success')
+
+        })
+    }
   }
+
 
   const personsFiltered = persons.filter(person => person.name.toLowerCase().includes(newFilter.toLowerCase()))
 
@@ -90,9 +138,31 @@ const App = () =>
   const handleFilterChange = (event) =>
     setNewFilter(event.target.value)
 
+  const handleRemove = (id) => 
+  {
+    const name = persons.find(p => p.id === id).name
+    if (window.confirm(`Delete ${name} ?`))
+    {
+      personsService.remove(id)
+        .then(() =>
+        {
+          showNotification(`${name} has been deleted`, 'success')
+        })
+        .catch(() =>
+        {
+          showNotification(`${name} has already been removed`, 'failure')
+        })
+
+      setPersons(persons.filter(p => p.id !== id))
+    }
+
+  }
+
+
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={notification.message} type={notification.type} />
       <Filter filter={newFilter} handleFilterChange={handleFilterChange} />
 
 
@@ -106,7 +176,10 @@ const App = () =>
       />
 
       <h2>Numbers</h2>
-      <Persons personsFiltered={personsFiltered}> </Persons>
+
+      {personsFiltered.map(p =>
+        <Person key={p.id} person={p} handleRemove={() => handleRemove(p.id)} />
+      )}
 
     </div>
   )
