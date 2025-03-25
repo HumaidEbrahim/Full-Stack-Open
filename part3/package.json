@@ -4,13 +4,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node idex.js",
+    "start": "node index.js",
     "dev": "node --watch index.js"
   },
   "author": "Humaid",
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "mongoose": "^8.12.2",
     "morgan": "^1.10.0"
