@@ -6,7 +6,7 @@ const url = process.env.MONGODB_URI
 
 console.log('Connecting to', url)
 
-mongoose.connect(url).then(response => console.log('Connected Successfully'))
+mongoose.connect(url).then(() => console.log('Connected Successfully'))
     .catch(error => console.log('Error connecting to MongoDB', error.message))
 
 const personSchema = new mongoose.Schema(

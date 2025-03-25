@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import personsService from './personsService'
+import personsService from './services/personsService'
 import './index.css'
 
 const PersonForm = (props) =>
@@ -125,7 +125,8 @@ const App = () =>
   }
 
 
-  const personsFiltered = persons.filter(person => person.name.toLowerCase().includes(newFilter.toLowerCase()))
+  const personsFiltered = persons
+  //persons.filter(person => person.name.toLowerCase().includes(newFilter.toLowerCase()))
 
   const handleNameChange = (event) =>
     setNewName(event.target.value)

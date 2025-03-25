@@ -1,4 +1,5 @@
 const express = require('express')
+
 require('dotenv').config()
 const Person = require('./models/person')
 const morgan = require('morgan')
@@ -6,18 +7,13 @@ const person = require('./models/person')
 
 const app = express()
 app.use(express.json())
+app.use(express.static('dist'))
 
 morgan.token('body', req => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 
 // routes
-app.get('/', (request, response) =>
-{
-    const requestTime = new Date().toString()
-    response.send(`Phonebook has info for people <br> ${requestTime}`)
-})
-
 
 app.get('/api/persons', (request, response) =>
 {
