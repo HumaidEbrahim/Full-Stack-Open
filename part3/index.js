@@ -11,21 +11,21 @@ morgan.token('body', req => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 
-// routes 
-app.get('/', (request, response) => 
+// routes
+app.get('/', (request, response) =>
 {
     const requestTime = new Date().toString()
     response.send(`Phonebook has info for people <br> ${requestTime}`)
 })
 
 
-app.get('/api/persons', (request, response) => 
+app.get('/api/persons', (request, response) =>
 {
     Person.find({}).then(people => response.json(people))
 })
 
 
-app.get('/api/persons/:id', (request, response, next) => 
+app.get('/api/persons/:id', (request, response, next) =>
 {
 
     person.findById(request.params.id)
@@ -73,7 +73,7 @@ app.put('/api/persons/:id', (request, response, next) =>
             person.name = name
             person.number = number
 
-            return person.save().then((updatedPerson => 
+            return person.save().then((updatedPerson =>
             {
                 response.json(updatedPerson)
             }))
