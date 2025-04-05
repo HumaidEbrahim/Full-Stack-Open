@@ -90,3 +90,56 @@ describe('favourite blog', () =>
         assert.deepStrictEqual(result, blogs[2])
     })
 })
+
+describe('most blogs', () =>
+{
+    test('most blogs for one author is that author', ()=>
+    {
+        const mostBlog =
+        {
+            author: "Michael Chan",
+            blogs: 1
+        }
+        const result = listHelper.mostBlogs([blogs[0]])
+    })
+
+    test('most blogs from multiple blog is author with most blogs', () =>
+    {
+        const mostBlog =
+        {
+            author: "Robert C. Martin",
+            blogs: 3
+        }
+        const result = listHelper.mostBlogs(blogs)
+        assert.deepStrictEqual(result, mostBlog)
+    })
+})
+
+describe('most likes', () =>
+{
+    test('most likes for one author is that author', () =>
+    
+    {
+        const mostLike =
+        {
+            author: "Michael Chan",
+            likes: 7
+        }
+
+        const result = listHelper.mostLikes([blogs[0]])
+        assert.deepStrictEqual(result, mostLike)
+    })
+
+    test('most likes from multiple blogs is author with most likes', () =>
+    {
+        const mostLike =
+        {
+            author: "Edsger W. Dijkstra",
+            likes: 17
+        }
+
+        const result = listHelper.mostLikes(blogs)
+        assert.deepStrictEqual(result, mostLike)
+
+    })
+})
