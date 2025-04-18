@@ -1,41 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import axios from 'axios'
 import Note from './components/Note'
 import LoginForm from './components/LoginForm'
 import NoteForm from './components/NoteForm'
 import Togglable from './components/Togglable'
+import Footer from './components/Footer'
+import Notification  from './components/Notification'
 import noteService from './services/notes'
 import loginService from './services/login'
 import './index.css'
-
-const Notification = ({ message }) => 
-{
-  if (message === null)
-    return null
-
-  return (
-    <div className='error'>
-      {message}
-    </div>
-  )
-
-}
-
-const Footer = () =>
-{
-  const footerStyle = {
-    color: 'green',
-    fontStyle: 'italic',
-    fontSize: 16,
-  }
-
-  return (
-    <div style={footerStyle}>
-      <br />
-      <em>Note app, 2025</em>
-    </div>
-  )
-}
 
 
 const App = () =>
@@ -59,18 +31,39 @@ const App = () =>
       })
   }, [])
 
-  useEffect(() => 
-  {
+  useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedNoteappUser')
-    if(loggedUserJSON)
-    {
+    if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
       setUser(user)
       noteService.setToken(user.token)
     }
-  }, [])
+  }, [])   
 
   console.log('render', notes.length, 'notes')
+
+  const toggleImportanceOf = (id) =>
+    {
+      const note = notes.find(n => n.id === id)
+      const changedNote = { ...note, important: !note.important }
+  
+      noteService.update(id, changedNote)
+        .then(response =>
+        {
+          setNotes(notes.map(n => n.id === id ? response : n))
+        })
+        .catch(error =>
+        {
+          setErrorMesssage(
+            `Note '${note.content}' was already removed from server`
+          )
+          setTimeout(() =>
+          {
+            setErrorMesssage(null)
+          }, 5000)
+          setNotes(notes.filter(n => n.id !== id))
+        })
+    }
 
   const notesToShow = showAll
     ? notes
@@ -105,55 +98,10 @@ const App = () =>
   }
 
 
-  const toggleImportanceOf = (id) =>
-  {
-    const note = notes.find(n => n.id === id)
-    const changedNote = { ...note, important: !note.important }
-
-    noteService.update(id, changedNote)
-      .then(response =>
-      {
-        setNotes(notes.map(n => n.id === id ? response : n))
-      })
-      .catch(error =>
-      {
-        setErrorMesssage(
-          `Note '${note.content}' was already removed from server`
-        )
-        setTimeout(() =>
-        {
-          setErrorMesssage(null)
-        }, 5000)
-        setNotes(notes.filter(n => n.id !== id))
-      })
-  }
-
-  const loginForm = () =>
-  {
-    const hideWhenVisible = { display: loginVisible ? 'none' : ''}
-    const showWhenVisible = { display: loginVisible ? '' : 'none' }
-
-    return (
-      <div> 
-        <div style={hideWhenVisible}>
-          <button onClick={() => setLoginVisible(true)}>log in</button>
-        </div>
-        
-        <div style={showWhenVisible}>
-        <LoginForm
-            username={username}
-            password={password}
-            handleUsernameChange={({ target }) => setUsername(target.value)}
-            handlePasswordChange={({ target }) => setPassword(target.value)}
-            handleSubmit={handleLogin}
-          />
-        </div>
-      </div>
-    )
-  }
 
   const addNote = (noteObject) =>
   {
+    noteFormRef.current.toggleVisibility()
     noteService
     .create(noteObject)
     .then(returnedNote => 
@@ -165,26 +113,37 @@ const App = () =>
 
   const noteFormRef = useRef()
 
-  const noteForm = () => (
-    <Togglable buttonLabel='new note' ref={noteFormRef}>
-      <NoteForm createNote={addNote} />
-      </Togglable>
-  )
+  const loginForm = () => 
+{
+    return (
+  
+      <Togglable buttonLabel='login'>
+      <LoginForm
+        username={username}
+        password={password}
+        handleUsernameChange={({ target }) => setUsername(target.value)}
+        handlePasswordChange={({ target }) => setPassword(target.value)}
+        handleSubmit={handleLogin}
+      />
+    </Togglable>
+    )
+  }
 
   return (
     <div>
       <h1>Notes</h1>
       <Notification message={errorMessage} />
 
-      <Togglable buttonLabel='login'>
-        <LoginForm
-          username={username}
-          password={password}
-          handleUsernameChange={({ target }) => setUsername(target.value)}
-          handlePasswordChange={({ target }) => setPassword(target.value)}
-          handleSubmit={handleLogin}
+      {!user && loginForm()}
+      {user && <div>
+       <p>{user.name} logged in</p>
+       <Togglable buttonLabel="new note" ref={noteFormRef}>
+        <NoteForm
+          createNote={addNote}
         />
-    </Togglable>
+      </Togglable>
+      </div>
+     } 
 
       <div>
         <button onClick={() => setShowAll(!showAll)}>
@@ -197,7 +156,6 @@ const App = () =>
         )}
       </ul>
         
-      {(noteForm())}
 
       <Footer />
     </div>
