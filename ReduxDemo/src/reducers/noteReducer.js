@@ -1,4 +1,3 @@
-import { createStore } from 'redux'
 
 const noteReducer = (state = [], action) =>
 {
@@ -21,34 +20,26 @@ const noteReducer = (state = [], action) =>
   }
 }
 
-const store = createStore(noteReducer)
+const generateId = () =>
+  Number((Math.random() * 1000000).toFixed(0))
 
-store.dispatch({
-  type: 'NEW_NOTE',
-  payload: 
-  {
-    content: 'app state in redux store',
-    important: true,
-    id: 1
+export const createNote = (content) => {
+  return {
+    type: 'NEW_NOTE',
+    payload: {
+      content,
+      important: false,
+      id: generateId()
+    }
   }
-})
+}
 
-store.dispatch({
-  type: 'NEW_NOTE',
-  payload:
-  {
-    content: 'state changes are made with actions',
-    important: false,
-    id: 2
+export const toggleImportanceOf = (id) => {
+  return {
+    type: 'TOGGLE_IMPORTANCE',
+    payload: { id }
   }
-})
+}
 
-store.dispatch({
-  type: 'TOGGLE_IMPORTANCE',
-  payload:
-  {
-    id:2
-  }
-})
 
 export default noteReducer
