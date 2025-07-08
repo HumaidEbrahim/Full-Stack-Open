@@ -3,7 +3,6 @@ import App from './App'
 
 import {
   ApolloClient,
-
   ApolloProvider,
   InMemoryCache,
 } from '@apollo/client'
@@ -17,6 +16,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
   <ApolloProvider client={client}>
     <App />
-
   </ApolloProvider>
 )

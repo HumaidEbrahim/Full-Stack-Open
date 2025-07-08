@@ -29,8 +29,6 @@ const PersonForm = ({ setError }) => {
     setCity('')
   }
 
-
-
   return (
     <div>
       <h2>create new</h2>
